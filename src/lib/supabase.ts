@@ -484,7 +484,8 @@ export async function getReportsCollection(): Promise<SituationReport[]> {
 export async function addReportToFirestore(report: Omit<SituationReport, 'id'>): Promise<string | null> {
   const client = getSupabaseClient();
   if (!client) return null;
-  const { data, error } = await client.from('reports').insert([toSnakeCaseRecord({ ...report, createdAt: new Date().toISOString() })]).select('id').single();
+  const { id, ...cleanReport } = report as any;
+  const { data, error } = await client.from('reports').insert([toSnakeCaseRecord({ ...cleanReport, createdAt: new Date().toISOString() })]).select('id').single();
   if (error) {
     console.error('Error adding report:', error);
     return null;

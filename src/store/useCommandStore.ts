@@ -309,9 +309,26 @@ export const useCommandStore = create<CommandStore>((set) => ({
   })),
   
   setReports: (reports) => set({ reports }),
-  addReport: (report) => set((state) => ({
-    reports: [report, ...state.reports]
-  })),
+  addReport: async (report) => {
+    const { id, ...payload } = report;
+    try {
+      const res = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed to save report to database');
+      const data = await res.json();
+      set((state) => ({
+        reports: [data, ...state.reports]
+      }));
+    } catch (err) {
+      console.error("Failed to add report to DB, saving locally:", err);
+      set((state) => ({
+        reports: [report, ...state.reports]
+      }));
+    }
+  },
   setResources: (resources) => set({ resources }),
   setVolunteers: (volunteers) => set({ volunteers }),
   setNotifications: (notifications) => set({ notifications }),
